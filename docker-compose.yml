@@ -1,0 +1,34 @@
+version: "3.3"
+
+services:
+  akaunting:
+    container_name: akaunting
+    image: docker.io/akaunting/akaunting:latest
+    build:
+      context: .
+    ports:
+      - 8088:80
+    volumes:
+      - akaunting-data:/var/www/html
+    restart: unless-stopped
+    env_file:
+      - ${run_env}
+    # environment:
+    #   - AKAUNTING_SETUP
+    depends_on:
+      - akaunting-db
+
+  akaunting-db:
+    container_name: akaunting-db
+    image: mysql:latest 
+    ports:
+      - 8033:3306
+    volumes:
+      - akaunting-db:/var/lib/mysql
+    restart: unless-stopped
+    env_file:
+      - ${db_env}   # add env var
+
+volumes:
+  akaunting-data:
+  akaunting-db:
