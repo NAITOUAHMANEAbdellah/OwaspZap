@@ -165,6 +165,11 @@ pipeline {
                 echo 'Invalid scan type. Please select either Baseline, APIs, or Full.'
             }
 
+
+            // Debug: List files in the ZAP container's report directory
+            echo "Listing files in ZAP report directory:"
+            sh 'docker exec zaproxy ls -al /zap/wrk/'
+               
             // Copy reports from the ZAP container to the Jenkins workspace
             echo "Copying ZAP report to workspace..."
             sh 'docker cp zaproxy:/zap/wrk/. .'
