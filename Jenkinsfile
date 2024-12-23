@@ -165,9 +165,14 @@ pipeline {
                 echo 'Invalid scan type. Please select either Baseline, APIs, or Full.'
             }
 
+            // Copy reports from the ZAP container to the Jenkins workspace
+            echo "Copying ZAP report to workspace..."
+            sh 'docker cp zaproxy:/zap/wrk/. .'
+
             // Archive the generated report for Jenkins
             echo "Archiving ZAP report..."
             archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
+               
         }
     }
 }
