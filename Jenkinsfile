@@ -192,7 +192,7 @@ pipeline {
     steps {
         script {
             scan_type = "${params.SCAN_TYPE ?: 'Baseline'}".trim()
-            target = "${params.TARGET ?: 'http://example.com'}".trim()
+            target = "${params.TARGET ?: 'https://www.almussa3id.com/'}".trim()
             echo "Scan type: $scan_type"
             echo "Target: $target"
 
