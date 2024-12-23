@@ -66,15 +66,13 @@ pipeline {
             // Cleaning up the workspace
             script {
                 
-                echo "=============turning OFF containers==============="
+                echo "============= Turning OFF containers ==============="
                 sh 'docker-compose down'
-                echo "=====LOG====docker-compose-exit-code2: %ERRORLEVEL%"
+                echo "===== LOG: docker-compose exit-code2 ====="
+
+                echo "============= Cleaning up the workspace ==============="
+                sh 'rm -rf * .git'
                 
-                echo "=============cleaning up the workspace==============="
-                sh 'del /q /s * && for /d %%p in (*) do rmdir "%%p" /s /q'
-                
-                echo "=============removing the .git folder==============="
-                sh 'rmdir /s /q .git'
             }
         }
     } 
