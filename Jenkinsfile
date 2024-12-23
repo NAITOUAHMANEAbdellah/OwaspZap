@@ -112,7 +112,7 @@ pipeline {
                     docker run --rm \
                         -v $(pwd):/zap/wrk:rw \
                         zaproxy/zap-stable zap-baseline.py \
-                        -t http://your-application-url \
+                        -t http://localhost:8088 \
                         -r zap_report.html
                     '''
                 }
