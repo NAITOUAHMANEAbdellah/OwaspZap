@@ -1,14 +1,15 @@
 pipeline {
     agent any
     stages {
-        // stage('Clone Repository') {
-        //     steps {
-        //         script {
-        //             echo '===========Cloning the repo================='
-        //             git url: 'https://github.com/sam99235/akaunting_docker_app.git', branch: "main"      
-        //         }
-        //     }
-        // }
+       
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo '===========Cloning the repo================='
+                    git url: 'https://github.com/NAITOUAHMANEAbdellah/OwaspZap.git', branch: "main"      
+                }
+            }
+        }
 
         stage('Pull images & Run Containers') {
             steps {
