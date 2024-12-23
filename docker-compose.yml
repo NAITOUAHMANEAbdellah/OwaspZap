@@ -12,7 +12,7 @@ services:
       - akaunting-data:/var/www/html
     restart: unless-stopped
     env_file:
-      - ${run_env}
+      - "/home/abdellah/Desktop/TestDev/akaunting_docker_app/env/run.env"
     # environment:
     #   - AKAUNTING_SETUP
     depends_on:
@@ -27,7 +27,7 @@ services:
       - akaunting-db:/var/lib/mysql
     restart: unless-stopped
     env_file:
-      - ${db_env}   # add env var
+      - "/home/abdellah/Desktop/TestDev/akaunting_docker_app/env/db.env"  # add env var
 
 volumes:
   akaunting-data:
