@@ -188,7 +188,7 @@ pipeline {
 
 
            ////////////////////////////////////////////////////////////////
-stage('Scanning target on OWASP container') {
+       stage('Scanning target on OWASP container') {
     steps {
         script {
             scan_type = "${params.SCAN_TYPE ?: 'Baseline'}".trim()
@@ -207,24 +207,25 @@ stage('Scanning target on OWASP container') {
             '''
 
             // Wait for the ZAP container to initialize
+            echo "Waiting for ZAP container to initialize..."
             sleep(20)
 
-            // Check the container logs
+            // Fetch ZAP container logs to understand why it's failing
             echo "Fetching ZAP container logs..."
             sh 'docker logs zaproxy || echo "No logs available for zaproxy container."'
 
-            // Validate the container is running
-            echo "Checking if ZAP container is running..."
-            sh '''
-                if ! docker inspect -f '{{.State.Running}}' zaproxy | grep -q true; then
-                    echo "ZAP container is not running!"
-                    exit 1
-                fi
-            '''
+            // Check if the container is running
+            def isRunning = sh(script: '''
+                docker inspect -f '{{.State.Running}}' zaproxy || echo "false"
+            ''', returnStdout: true).trim()
+            
+            if (isRunning != "true") {
+                error("ZAP container is not running! Check logs for details.")
+            }
 
             // Execute the scan based on the chosen scan type
+            echo "Executing ZAP scan: $scan_type..."
             if (scan_type == 'Baseline') {
-                echo "Running Baseline scan..."
                 sh """
                     docker exec zaproxy zap-baseline.py \
                     -t $target \
@@ -232,7 +233,6 @@ stage('Scanning target on OWASP container') {
                     -I
                 """
             } else if (scan_type == 'APIs') {
-                echo "Running API scan..."
                 sh """
                     docker exec zaproxy zap-api-scan.py \
                     -t $target \
@@ -240,7 +240,6 @@ stage('Scanning target on OWASP container') {
                     -I
                 """
             } else if (scan_type == 'Full') {
-                echo "Running Full scan..."
                 sh """
                     docker exec zaproxy zap-full-scan.py \
                     -t $target \
@@ -248,16 +247,15 @@ stage('Scanning target on OWASP container') {
                     -I
                 """
             } else {
-                echo "Invalid scan type: $scan_type"
-                error("Scan type must be 'Baseline', 'APIs', or 'Full'")
+                error("Invalid scan type: $scan_type. Must be 'Baseline', 'APIs', or 'Full'.")
             }
 
-            // Copy reports to the Jenkins workspace
-            echo "Copying ZAP report to workspace..."
+            // Copy the reports from the container to the Jenkins workspace
+            echo "Copying ZAP reports to workspace..."
             sh 'docker cp zaproxy:/zap/wrk/. .'
 
-            // Archive the report
-            echo "Archiving ZAP report..."
+            // Archive the reports
+            echo "Archiving ZAP reports..."
             archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
         }
     }
