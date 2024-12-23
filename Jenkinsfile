@@ -188,37 +188,26 @@ pipeline {
 
 
            ////////////////////////////////////////////////////////////////
-
-           stage('Scanning target on OWASP container') {
+stage('Scanning target on OWASP container') {
     steps {
         script {
-            // Retrieve scan type and target from parameters
-            scan_type = "${params.SCAN_TYPE}"
-            target = "${params.TARGET}"
-            echo "----> scan_type: $scan_type"
-            echo "----> target: $target"
+            // Set default scan type and target
+            scan_type = "${params.SCAN_TYPE ?: 'Baseline'}".trim()
+            target = "${params.TARGET ?: 'http://example.com'}".trim()
+            echo "Scan type: $scan_type"
+            echo "Target: $target"
 
             // Ensure ZAP container is running (remove and recreate if needed)
             echo "Ensuring ZAP container is running..."
             sh '''
-                if [ "$(docker ps -aq -f name=zaproxy)" ]; then
-                    docker rm -f zaproxy || true
-                fi
+                docker rm -f zaproxy || true
                 docker run -d --name zaproxy -p 8090:8090 zaproxy/zap-stable
             '''
 
             // Wait for the ZAP container to be fully up and running
             sleep(10)
 
-            // Check container status
-            echo "Checking container status..."
-            sh 'docker ps -a'
-
-            // Debug: Check ZAP container logs
-            echo "Checking ZAP container logs..."
-            sh 'docker logs zaproxy || echo "No logs available for zaproxy container."'
-
-            // Execute different scans based on the chosen scan type
+            // Execute the scan based on the chosen or default scan type
             if (scan_type == 'Baseline') {
                 echo "Running Baseline scan..."
                 sh """
@@ -244,13 +233,9 @@ pipeline {
                      -I
                  """
             } else {
-                echo 'Invalid scan type. Please select either Baseline, APIs, or Full.'
-                error("Invalid scan type")
+                echo "Invalid scan type: $scan_type"
+                error("Scan type must be 'Baseline', 'APIs', or 'Full'")
             }
-
-            // Debug: List files in the ZAP container's report directory
-            echo "Listing files in ZAP report directory:"
-            sh 'docker exec zaproxy ls -al /zap/wrk/'
 
             // Copy reports from the ZAP container to the Jenkins workspace
             echo "Copying ZAP report to workspace..."
@@ -262,6 +247,8 @@ pipeline {
         }
     }
 }
+
+              /////////////////////////////////////////////////////////////////////
 
 
     }
