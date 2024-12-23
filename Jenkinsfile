@@ -141,15 +141,22 @@ pipeline {
 
     }
 
-    post {
+       
+           post {
         always {
+            // Cleaning up the workspace
             script {
-                echo "============= Stopping containers ==============="
+                
+                echo "============= Turning OFF containers ==============="
                 sh 'docker-compose down'
+                echo "===== LOG: docker-compose exit-code2 ====="
 
-                echo "============= Archiving ZAP Report ==============="
-                archiveArtifacts artifacts: 'zap_report.html', onlyIfSuccessful: true
+                echo "============= Cleaning up the workspace ==============="
+                sh 'rm -rf * .git'
+                
             }
         }
-    }
+    } 
+
+
 }
