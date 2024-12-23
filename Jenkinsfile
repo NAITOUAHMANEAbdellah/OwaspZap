@@ -131,7 +131,7 @@ pipeline {
             echo "----> target: $target"
 
             // Ensure ZAP container is running (restart if needed)
-            sh 'docker start zaproxy || docker run -d --name zaproxy -p 8080:8080 zaproxy/zap-stable'
+            sh 'docker start zaproxy || docker run -d --name zaproxy -p 8090:8090 zaproxy/zap-stable'
 
             // Wait for the ZAP container to be fully up and running
             sleep(5)
