@@ -126,10 +126,11 @@ pipeline {
             echo "=========== Running OWASP ZAP scan ================"
             sh '''
             docker run --rm \
-                -v /tmp/zap-wrk:/zap/wrk:rw \
-                zaproxy/zap-stable zap-baseline.py \
-                -t http://akaunting:8088 \
-                -r zap_report.html
+                  -v /tmp/zap-wrk:/zap/wrk:rw \
+                  --user=root \
+                  zaproxy/zap-stable zap-baseline.py \
+                  -t http://akaunting:8088 \
+                  -r zap_report.html
             '''
         }
     }
