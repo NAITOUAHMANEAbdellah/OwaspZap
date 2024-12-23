@@ -139,7 +139,7 @@ pipeline {
                   -v /tmp/zap-wrk:/zap/wrk:rw \
                   --user=root \
                   zaproxy/zap-stable zap-baseline.py \
-                  -t http://akaunting:8088 \
+                  -t http://localhost:8088/ \
                   -r zap_report.html
             '''
         }
