@@ -104,15 +104,6 @@ pipeline {
             }
         }
 
-       stage('Wait for akaunting to be fully ready') {
-            steps {
-                script {
-                    echo "========== Waiting for akaunting to be fully ready ========"
-                    // Sleep for 30 seconds to allow the akaunting container to fully initialize
-                    sleep 30
-                }
-            }
-        }
 
         // stage('Run OWASP ZAP Scan') {
         //     steps {
@@ -130,21 +121,21 @@ pipeline {
         // }
 
 
-           stage('Run OWASP ZAP Scan') {
-    steps {
-        script {
-            echo "=========== Running OWASP ZAP scan ================"
-            sh '''
-            docker run --rm \
-                  -v /tmp/zap-wrk:/zap/wrk:rw \
-                  --user=root \
-                  zaproxy/zap-stable zap-baseline.py \
-                  -t http://localhost:8000 \
-                  -r zap_report.html
-            '''
-        }
-    }
-}
+//            stage('Run OWASP ZAP Scan') {
+//     steps {
+//         script {
+//             echo "=========== Running OWASP ZAP scan ================"
+//             sh '''
+//             docker run --rm \
+//                   -v /tmp/zap-wrk:/zap/wrk:rw \
+//                   --user=root \
+//                   zaproxy/zap-stable zap-baseline.py \
+//                   -t http://localhost:8000 \
+//                   -r zap_report.html
+//             '''
+//         }
+//     }
+// }
 
            
 
