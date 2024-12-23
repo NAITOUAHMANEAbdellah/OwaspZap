@@ -198,7 +198,7 @@ stages {
 stage('Scanning target on local OWASP ZAP instance') {
     steps {
         script {
-            scan_type = "${params.SCAN_TYPE ?: 'Full'}".trim()
+            scan_type = "${params.SCAN_TYPE ?: 'APIs'}".trim()
             target = "${params.TARGET ?: 'http://localhost:8088/'}".trim()
             echo "Scan type: $scan_type"
             echo "Target: $target"
