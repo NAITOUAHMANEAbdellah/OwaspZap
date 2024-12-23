@@ -121,21 +121,56 @@ pipeline {
         // }
 
 
-//            stage('Run OWASP ZAP Scan') {
-//     steps {
-//         script {
-//             echo "=========== Running OWASP ZAP scan ================"
-//             sh '''
-//             docker run --rm \
-//                   -v /tmp/zap-wrk:/zap/wrk:rw \
-//                   --user=root \
-//                   zaproxy/zap-stable zap-baseline.py \
-//                   -t http://localhost:8000 \
-//                   -r zap_report.html
-//             '''
-//         }
-//     }
-// }
+       stage('Scanning target on OWASP container') {
+    steps {
+        script {
+            // Retrieve scan type and target from parameters
+            scan_type = "${params.SCAN_TYPE}"
+            target = "${params.TARGET}"
+            echo "----> scan_type: $scan_type"
+            echo "----> target: $target"
+
+            // Ensure ZAP container is running (restart if needed)
+            sh 'docker start zaproxy || docker run -d --name zaproxy -p 8080:8080 zaproxy/zap-stable'
+
+            // Wait for the ZAP container to be fully up and running
+            sleep(5)
+
+            // Execute different scans based on the chosen scan type
+            if (scan_type == 'Baseline') {
+                echo "Running Baseline scan..."
+                sh """
+                     docker exec zaproxy zap-baseline.py \
+                     -t $target \
+                     -r zap_report_baseline.html \
+                     -I
+                 """
+            } else if (scan_type == 'APIs') {
+                echo "Running API scan..."
+                sh """
+                     docker exec zaproxy zap-api-scan.py \
+                     -t $target \
+                     -r zap_report_api.html \
+                     -I
+                 """
+            } else if (scan_type == 'Full') {
+                echo "Running Full scan..."
+                sh """
+                     docker exec zaproxy zap-full-scan.py \
+                     -t $target \
+                     -r zap_report_full.html \
+                     -I
+                 """
+            } else {
+                echo 'Invalid scan type. Please select either Baseline, APIs, or Full.'
+            }
+
+            // Archive the generated report for Jenkins
+            echo "Archiving ZAP report..."
+            archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
+        }
+    }
+}
 
            
 
