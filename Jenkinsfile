@@ -238,16 +238,49 @@ stage('Scanning target on local OWASP ZAP instance') {
                 error("Invalid scan type: $scan_type. Must be 'Baseline', 'APIs', or 'Full'.")
             }
 
-            // Fetch ZAP scan report (you can adjust the path as needed)
-            echo "Fetching ZAP scan report..."
-            sh 'curl -s http://localhost:8090/JSON/core/view/alerts'
+            // // Fetch ZAP scan report (you can adjust the path as needed)
+            // echo "Fetching ZAP scan report..."
+            // sh 'curl -s http://localhost:8090/JSON/core/view/alerts'
 
-            // Archive the reports
-            echo "Archiving ZAP reports..."
-            archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
+            // // Archive the reports
+            // echo "Archiving ZAP reports..."
+            // archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
         }
     }
 }
+
+       stage('Fetching ZAP Scan Report') {
+    steps {
+        script {
+            // Fetch ZAP scan report using the ZAP API and save to a file
+            echo "Fetching ZAP scan report..."
+            sh '''
+                # Perform the ZAP API call to generate the report
+                curl -s -X POST "http://localhost:8090/JSON/core/action/alerts" --data-urlencode "url=http://localhost:8088/"
+                
+                # Check if ZAP generated the report and save it to a file
+                curl -s -X GET "http://localhost:8090/JSON/core/view/alerts" -o zap_report.json
+
+                # Generate an HTML report from the JSON report (adjust as necessary)
+                # This is just an example of converting the JSON data to a more readable HTML format
+                # You might need a separate tool to convert JSON to HTML if required
+                # Here we're assuming you have a command to convert the JSON to HTML, like using a custom script
+                python3 generate_html_report.py zap_report.json zap_report.html
+            '''
+        }
+    }
+}
+
+stage('Archive ZAP Reports') {
+    steps {
+        script {
+            // Archive the generated ZAP HTML reports
+            echo "Archiving ZAP reports..."
+            archiveArtifacts artifacts: '**/zap_report_*.html', onlyIfSuccessful: true
+        }
+    }
+}
+
 }
 post {
     always {
