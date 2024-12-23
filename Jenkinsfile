@@ -104,6 +104,16 @@ pipeline {
             }
         }
 
+       stage('Wait for akaunting to be fully ready') {
+            steps {
+                script {
+                    echo "========== Waiting for akaunting to be fully ready ========"
+                    // Sleep for 30 seconds to allow the akaunting container to fully initialize
+                    sleep 30
+                }
+            }
+        }
+
         // stage('Run OWASP ZAP Scan') {
         //     steps {
         //         script {
