@@ -207,17 +207,14 @@ stage('Scanning target on OWASP container') {
             '''
 
             // Wait for the ZAP container to initialize
-            sleep(15)
+            sleep(20)
 
-            // Check if the container is running
-            echo "Checking container status..."
-            sh 'docker ps -a'
-            
-            // Fetch logs to diagnose potential issues
+            // Check the container logs
             echo "Fetching ZAP container logs..."
             sh 'docker logs zaproxy || echo "No logs available for zaproxy container."'
 
             // Validate the container is running
+            echo "Checking if ZAP container is running..."
             sh '''
                 if ! docker inspect -f '{{.State.Running}}' zaproxy | grep -q true; then
                     echo "ZAP container is not running!"
@@ -225,7 +222,7 @@ stage('Scanning target on OWASP container') {
                 fi
             '''
 
-            // Execute the scan
+            // Execute the scan based on the chosen scan type
             if (scan_type == 'Baseline') {
                 echo "Running Baseline scan..."
                 sh """
@@ -265,6 +262,7 @@ stage('Scanning target on OWASP container') {
         }
     }
 }
+
 
               /////////////////////////////////////////////////////////////////////
 
