@@ -118,20 +118,24 @@ pipeline {
         //         }
         //     }
         // }
-       stage('Run OWASP ZAP Scan') {
-       steps {
+
+
+           stage('Run OWASP ZAP Scan') {
+    steps {
         script {
             echo "=========== Running OWASP ZAP scan ================"
             sh '''
             docker run --rm \
                 -v /tmp/zap-wrk:/zap/wrk:rw \
                 zaproxy/zap-stable zap-baseline.py \
-                -t http://localhost:8088 \
+                -t http://akaunting:8088 \
                 -r zap_report.html
             '''
         }
     }
 }
+
+           
 
     }
 
