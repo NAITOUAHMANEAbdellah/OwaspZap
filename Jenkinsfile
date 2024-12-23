@@ -199,7 +199,7 @@ stage('Scanning target on local OWASP ZAP instance') {
     steps {
         script {
             scan_type = "${params.SCAN_TYPE ?: 'APIs'}".trim()
-            target = "${params.TARGET ?: 'http://localhost:8088/'}".trim()
+            target = "${params.TARGET ?: 'http://localhost:3000/'}".trim()
             echo "Scan type: $scan_type"
             echo "Target: $target"
 
@@ -256,7 +256,7 @@ stage('Fetching ZAP Scan Report') {
             // Fetch ZAP scan report and save as JSON
             echo "Fetching ZAP scan report..."
             sh '''
-                curl -s -X GET "http://localhost:8090/JSON/core/view/alerts" --data-urlencode "baseurl=http://localhost:8088/" -o zap_report.json
+                curl -s -X GET "http://localhost:8090/JSON/core/view/alerts" --data-urlencode "baseurl=http://localhost:3000/" -o zap_report.json
             '''
         }
     }
