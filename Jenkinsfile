@@ -192,96 +192,165 @@
 //     }
 // }
 
-pipeline {
-    agent any
-stages {
-stage('Scanning target on local OWASP ZAP instance') {
-    steps {
-        script {
-            scan_type = "${params.SCAN_TYPE ?: 'APIs'}".trim()
-            target = "${params.TARGET ?: 'http://localhost:3000/'}".trim()
-            echo "Scan type: $scan_type"
-            echo "Target: $target"
 
-            // Ensure the local ZAP instance is running
-            echo "Checking if local ZAP instance is running on port 8090..."
-            def isZAPRunning = sh(script: 'netstat -an | grep 8090 || echo "false"', returnStdout: true).trim()
+
+// pipeline {
+//     agent any
+// stages {
+// stage('Scanning target on local OWASP ZAP instance') {
+//     steps {
+//         script {
+//             scan_type = "${params.SCAN_TYPE ?: 'APIs'}".trim()
+//             target = "${params.TARGET ?: 'http://localhost:3000/'}".trim()
+//             echo "Scan type: $scan_type"
+//             echo "Target: $target"
+
+//             // Ensure the local ZAP instance is running
+//             echo "Checking if local ZAP instance is running on port 8090..."
+//             def isZAPRunning = sh(script: 'netstat -an | grep 8090 || echo "false"', returnStdout: true).trim()
             
-            if (isZAPRunning == "false") {
-                error("OWASP ZAP is not running on port 8090. Please start the ZAP application.")
-            }
+//             if (isZAPRunning == "false") {
+//                 error("OWASP ZAP is not running on port 8090. Please start the ZAP application.")
+//             }
 
-            // Execute the scan based on the chosen scan type
-            echo "Executing ZAP scan: $scan_type..."
-            if (scan_type == 'Baseline') {
-                sh """
-                    curl -s -X POST http://localhost:8090/JSON/ascan/action/scan \
-                    --data-urlencode "url=$target" \
-                    --data-urlencode "scanPolicyName=Default Policy" \
-                    --data-urlencode "maxUrlCount=5"
-                """
-            } else if (scan_type == 'APIs') {
-                sh """
-                    curl -s -X POST http://localhost:8090/JSON/ascan/action/scan \
-                    --data-urlencode "url=$target" \
-                    --data-urlencode "scanPolicyName=API Policy" \
-                    --data-urlencode "maxUrlCount=5"
-                """
-            } else if (scan_type == 'Full') {
-                sh """
-                    curl -s -X POST http://localhost:8090/JSON/ascan/action/scan \
-                    --data-urlencode "url=$target" \
-                    --data-urlencode "scanPolicyName=Full Scan Policy" \
-                    --data-urlencode "maxUrlCount=10"
-                """
-            } else {
-                error("Invalid scan type: $scan_type. Must be 'Baseline', 'APIs', or 'Full'.")
-            }
+//             // Execute the scan based on the chosen scan type
+//             echo "Executing ZAP scan: $scan_type..."
+//             if (scan_type == 'Baseline') {
+//                 sh """
+//                     curl -s -X POST http://localhost:8090/JSON/ascan/action/scan \
+//                     --data-urlencode "url=$target" \
+//                     --data-urlencode "scanPolicyName=Default Policy" \
+//                     --data-urlencode "maxUrlCount=5"
+//                 """
+//             } else if (scan_type == 'APIs') {
+//                 sh """
+//                     curl -s -X POST http://localhost:8090/JSON/ascan/action/scan \
+//                     --data-urlencode "url=$target" \
+//                     --data-urlencode "scanPolicyName=API Policy" \
+//                     --data-urlencode "maxUrlCount=5"
+//                 """
+//             } else if (scan_type == 'Full') {
+//                 sh """
+//                     curl -s -X POST http://localhost:8090/JSON/ascan/action/scan \
+//                     --data-urlencode "url=$target" \
+//                     --data-urlencode "scanPolicyName=Full Scan Policy" \
+//                     --data-urlencode "maxUrlCount=10"
+//                 """
+//             } else {
+//                 error("Invalid scan type: $scan_type. Must be 'Baseline', 'APIs', or 'Full'.")
+//             }
 
-            // // Fetch ZAP scan report (you can adjust the path as needed)
-            // echo "Fetching ZAP scan report..."
-            // sh 'curl -s http://localhost:8090/JSON/core/view/alerts'
+//             // // Fetch ZAP scan report (you can adjust the path as needed)
+//             // echo "Fetching ZAP scan report..."
+//             // sh 'curl -s http://localhost:8090/JSON/core/view/alerts'
 
-            // // Archive the reports
-            // echo "Archiving ZAP reports..."
-            // archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
-        }
-    }
-}
+//             // // Archive the reports
+//             // echo "Archiving ZAP reports..."
+//             // archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
+//         }
+//     }
+// }
 
        
-stage('Fetching ZAP Scan Report') {
-    steps {
-        script {
-            // Fetch ZAP scan report and save as JSON
-            echo "Fetching ZAP scan report..."
-            sh '''
-                curl -s -X GET "http://localhost:8090/JSON/core/view/alerts" --data-urlencode "baseurl=http://localhost:3000/" -o zap_report.json
-            '''
+// stage('Fetching ZAP Scan Report') {
+//     steps {
+//         script {
+//             // Fetch ZAP scan report and save as JSON
+//             echo "Fetching ZAP scan report..."
+//             sh '''
+//                 curl -s -X GET "http://localhost:8090/JSON/core/view/alerts" --data-urlencode "baseurl=http://localhost:3000/" -o zap_report.json
+//             '''
+//         }
+//     }
+// }
+
+// stage('Archive ZAP Reports') {
+//     steps {
+//         script {
+//             // Archive the generated ZAP JSON report
+//             echo "Archiving ZAP reports..."
+//             archiveArtifacts artifacts: 'zap_report.json', onlyIfSuccessful: true
+//         }
+//     }
+// }
+
+
+
+// }
+// post {
+//     always {
+//         // Optional: Clean up workspace (if necessary)
+//         script {
+//             echo "============= Cleaning up the workspace ==============="
+//             sh 'rm -rf * .git'
+//         }
+//     }
+// }
+// }
+
+
+pipeline {
+    agent any
+    stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo '=========== Cloning the repo ================'
+                    git url: 'https://github.com/sam99235/akaunting_docker_app.git', branch: "main"
+                }
+            }
+        }
+
+        stage('Pull Images & Run Containers') {
+            steps {
+                echo "========== Pulling and Running the Containers ========"
+                bat "docker-compose up -d"
+                echo "=====LOG==== Exit-code1: %ERRORLEVEL%"
+            }
+        }
+
+        stage('OWASP ZAP Scan') {
+            steps {
+                script {
+                    echo "========== Running OWASP ZAP Scan =========="
+
+                    // Define the target URL of your application
+                    def targetURL = "http://localhost:8088" // Adjust as per your app's URL
+
+                    // Run ZAP Spider to crawl the application
+                    sh """
+                    zap-cli --zap-url http://localhost --zap-port 8090 spider ${targetURL}
+                    """
+
+                    // Run the active scan
+                    sh """
+                    zap-cli --zap-url http://localhost --zap-port 8090 active-scan ${targetURL}
+                    """
+
+                    // Generate and save the report
+                    sh """
+                    zap-cli --zap-url http://localhost --zap-port 8090 report -o ./owasp_zap_report.html -f html
+                    """
+
+                    echo "OWASP ZAP Scan Complete. Report saved at ./owasp_zap_report.html"
+                }
+            }
         }
     }
-}
 
-stage('Archive ZAP Reports') {
-    steps {
-        script {
-            // Archive the generated ZAP JSON report
-            echo "Archiving ZAP reports..."
-            archiveArtifacts artifacts: 'zap_report.json', onlyIfSuccessful: true
+    post {
+        always {
+            script {
+                echo "============= Turning OFF Containers ==============="
+                bat 'docker-compose down'
+                echo "=====LOG==== Docker-compose-exit-code2: %ERRORLEVEL%"
+
+                echo "============= Cleaning up the Workspace ==============="
+                bat 'del /q /s * && for /d %%p in (*) do rmdir "%%p" /s /q'
+
+                echo "============= Removing the .git Folder ==============="
+                bat 'rmdir /s /q .git'
+            }
         }
     }
-}
-
-
-
-}
-post {
-    always {
-        // Optional: Clean up workspace (if necessary)
-        script {
-            echo "============= Cleaning up the workspace ==============="
-            sh 'rm -rf * .git'
-        }
-    }
-}
 }
