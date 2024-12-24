@@ -309,33 +309,33 @@ pipeline {
             }
         }
 
-        stage('OWASP ZAP Scan') {
-            steps {
-                script {
-                    echo "========== Running OWASP ZAP Scan =========="
+        // stage('OWASP ZAP Scan') {
+        //     steps {
+        //         script {
+        //             echo "========== Running OWASP ZAP Scan =========="
 
-                    // Define the target URL of your application
-                    def targetURL = "http://localhost:8088" // Adjust as per your app's URL
+        //             // Define the target URL of your application
+        //             def targetURL = "http://localhost:8088" // Adjust as per your app's URL
 
-                    // Run ZAP Spider to crawl the application
-                    sh """
-                    zap-cli --zap-url http://localhost --zap-port 8090 spider ${targetURL}
-                    """
+        //             // Run ZAP Spider to crawl the application
+        //             sh """
+        //             zap-cli --zap-url http://localhost --zap-port 8090 spider ${targetURL}
+        //             """
 
-                    // Run the active scan
-                    sh """
-                    zap-cli --zap-url http://localhost --zap-port 8090 active-scan ${targetURL}
-                    """
+        //             // Run the active scan
+        //             sh """
+        //             zap-cli --zap-url http://localhost --zap-port 8090 active-scan ${targetURL}
+        //             """
 
-                    // Generate and save the report
-                    sh """
-                    zap-cli --zap-url http://localhost --zap-port 8090 report -o ./owasp_zap_report.html -f html
-                    """
+        //             // Generate and save the report
+        //             sh """
+        //             zap-cli --zap-url http://localhost --zap-port 8090 report -o ./owasp_zap_report.html -f html
+        //             """
 
-                    echo "OWASP ZAP Scan Complete. Report saved at ./owasp_zap_report.html"
-                }
-            }
-        }
+        //             echo "OWASP ZAP Scan Complete. Report saved at ./owasp_zap_report.html"
+        //         }
+        //     }
+        // }
     }
 
     post {
