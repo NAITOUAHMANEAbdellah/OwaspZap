@@ -82,115 +82,115 @@
 
 
 
-// pipeline {
-//     agent any
+pipeline {
+    agent any
 
-//     stages {
-//         stage('Clone Repository') {
-//             steps {
-//                 script {
-//                     echo '=========== Cloning the repo ================='
-//                     git url: 'https://github.com/NAITOUAHMANEAbdellah/OwaspZap.git', branch: "main"
-//                 }
-//             }
-//         }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo '=========== Cloning the repo ================='
+                    git url: 'https://github.com/NAITOUAHMANEAbdellah/OwaspZap.git', branch: "main"
+                }
+            }
+        }
 
-//         stage('Pull Images & Run Containers') {
-//             steps {
-//                 echo "========== Pulling and running the containers ========"
-//                 sh "docker-compose up -d"
-//             }
-//         }   
+        stage('Pull Images & Run Containers') {
+            steps {
+                echo "========== Pulling and running the containers ========"
+                sh "docker-compose up -d"
+            }
+        }   
 
-//         stage('Scanning target on OWASP container') {
-//             steps {
-//                 script {
-//                     scan_type = "${params.SCAN_TYPE ?: 'Baseline'}".trim()
-//                     target = "${params.TARGET ?: 'http://localhost:8088/'}".trim()
-//                     echo "Scan type: $scan_type"
-//                     echo "Target: $target"
+        stage('Scanning target on OWASP container') {
+            steps {
+                script {
+                    scan_type = "${params.SCAN_TYPE ?: 'Baseline'}".trim()
+                    target = "${params.TARGET ?: 'http://localhost:8088/'}".trim()
+                    echo "Scan type: $scan_type"
+                    echo "Target: $target"
 
-//                     // Ensure ZAP container is running
-//                     echo "Starting or restarting ZAP container..."
-//                     sh '''
-//                         if [ "$(docker ps -aq -f name=zaproxy)" ]; then
-//                             docker rm -f zaproxy || true
-//                         fi
-//                         docker pull zaproxy/zap-stable
-//                         docker run -d --name zaproxy -p 8090:8090 zaproxy/zap-stable
-//                     '''
+                    // Ensure ZAP container is running
+                    echo "Starting or restarting ZAP container..."
+                    sh '''
+                        if [ "$(docker ps -aq -f name=zaproxy)" ]; then
+                            docker rm -f zaproxy || true
+                        fi
+                        docker pull zaproxy/zap-stable
+                        docker run -d --name zaproxy -p 8090:8090 zaproxy/zap-stable
+                    '''
 
-//                     // Wait for the ZAP container to initialize
-//                     echo "Waiting for ZAP container to initialize..."
-//                     sleep(60)  // Increase sleep time to 60 seconds
+                    // Wait for the ZAP container to initialize
+                    echo "Waiting for ZAP container to initialize..."
+                    sleep(60)  // Increase sleep time to 60 seconds
 
-//                     // Fetch ZAP container logs to understand why it's failing
-//                     echo "Fetching ZAP container logs..."
-//                     sh 'docker logs zaproxy || echo "No logs available for zaproxy container."'
+                    // Fetch ZAP container logs to understand why it's failing
+                    echo "Fetching ZAP container logs..."
+                    sh 'docker logs zaproxy || echo "No logs available for zaproxy container."'
 
-//                     // Check if the container is running
-//                     def isRunning = sh(script: '''
-//                         docker inspect -f '{{.State.Running}}' zaproxy || echo "false"
-//                     ''', returnStdout: true).trim()
+                    // Check if the container is running
+                    def isRunning = sh(script: '''
+                        docker inspect -f '{{.State.Running}}' zaproxy || echo "false"
+                    ''', returnStdout: true).trim()
                     
-//                     if (isRunning != "true") {
-//                         error("ZAP container is not running! Check logs for details.")
-//                     }
+                    if (isRunning != "true") {
+                        error("ZAP container is not running! Check logs for details.")
+                    }
 
-//                     // Execute the scan based on the chosen scan type
-//                     echo "Executing ZAP scan: $scan_type..."
-//                     if (scan_type == 'Baseline') {
-//                         sh """
-//                             docker exec zaproxy zap-baseline.py \
-//                             -t $target \
-//                             -r /zap/wrk/zap_report_baseline.html \
-//                             -I
-//                         """
-//                     } else if (scan_type == 'APIs') {
-//                         sh """
-//                             docker exec zaproxy zap-api-scan.py \
-//                             -t $target \
-//                             -r /zap/wrk/zap_report_api.html \
-//                             -I
-//                         """
-//                     } else if (scan_type == 'Full') {
-//                         sh """
-//                             docker exec zaproxy zap-full-scan.py \
-//                             -t $target \
-//                             -r /zap/wrk/zap_report_full.html \
-//                             -I
-//                         """
-//                     } else {
-//                         error("Invalid scan type: $scan_type. Must be 'Baseline', 'APIs', or 'Full'.")
-//                     }
+                    // Execute the scan based on the chosen scan type
+                    echo "Executing ZAP scan: $scan_type..."
+                    if (scan_type == 'Baseline') {
+                        sh """
+                            docker exec zaproxy zap-baseline.py \
+                            -t $target \
+                            -r /zap/wrk/zap_report_baseline.html \
+                            -I
+                        """
+                    } else if (scan_type == 'APIs') {
+                        sh """
+                            docker exec zaproxy zap-api-scan.py \
+                            -t $target \
+                            -r /zap/wrk/zap_report_api.html \
+                            -I
+                        """
+                    } else if (scan_type == 'Full') {
+                        sh """
+                            docker exec zaproxy zap-full-scan.py \
+                            -t $target \
+                            -r /zap/wrk/zap_report_full.html \
+                            -I
+                        """
+                    } else {
+                        error("Invalid scan type: $scan_type. Must be 'Baseline', 'APIs', or 'Full'.")
+                    }
 
-//                     // Copy the reports from the container to the Jenkins workspace
-//                     echo "Copying ZAP reports to workspace..."
-//                     sh 'docker cp zaproxy:/zap/wrk/. .'
+                    // Copy the reports from the container to the Jenkins workspace
+                    echo "Copying ZAP reports to workspace..."
+                    sh 'docker cp zaproxy:/zap/wrk/. .'
 
-//                     // Archive the reports
-//                     echo "Archiving ZAP reports..."
-//                     archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
-//                 }
-//             }
-//         }
+                    // Archive the reports
+                    echo "Archiving ZAP reports..."
+                    archiveArtifacts artifacts: '*.html', onlyIfSuccessful: true
+                }
+            }
+        }
 
-//     }
+    }
 
-//     post {
-//         always {
-//             // Cleaning up the workspace
-//             script {
-//                 echo "============= Turning OFF containers ==============="
-//                 sh 'docker-compose down'
-//                 echo "===== LOG: docker-compose exit-code2 ====="
+    post {
+        always {
+            // Cleaning up the workspace
+            script {
+                echo "============= Turning OFF containers ==============="
+                sh 'docker-compose down'
+                echo "===== LOG: docker-compose exit-code2 ====="
 
-//                 echo "============= Cleaning up the workspace ==============="
-//                 sh 'rm -rf * .git'
-//             }
-//         }
-//     }
-// }
+                echo "============= Cleaning up the workspace ==============="
+                sh 'rm -rf * .git'
+            }
+        }
+    }
+}
 
 
 
@@ -288,69 +288,3 @@
 // }
 // }
 
-
-pipeline {
-    agent any
-    stages {
-        stage('Clone Repository') {
-            steps {
-                script {
-                    echo '=========== Cloning the repo ================'
-                    git url: 'https://github.com/sam99235/akaunting_docker_app.git', branch: "main"
-                }
-            }
-        }
-
-        stage('Pull Images & Run Containers') {
-            steps {
-                echo "========== Pulling and Running the Containers ========"
-                bat "docker-compose up -d"
-                echo "=====LOG==== Exit-code1: %ERRORLEVEL%"
-            }
-        }
-
-        // stage('OWASP ZAP Scan') {
-        //     steps {
-        //         script {
-        //             echo "========== Running OWASP ZAP Scan =========="
-
-        //             // Define the target URL of your application
-        //             def targetURL = "http://localhost:8088" // Adjust as per your app's URL
-
-        //             // Run ZAP Spider to crawl the application
-        //             sh """
-        //             zap-cli --zap-url http://localhost --zap-port 8090 spider ${targetURL}
-        //             """
-
-        //             // Run the active scan
-        //             sh """
-        //             zap-cli --zap-url http://localhost --zap-port 8090 active-scan ${targetURL}
-        //             """
-
-        //             // Generate and save the report
-        //             sh """
-        //             zap-cli --zap-url http://localhost --zap-port 8090 report -o ./owasp_zap_report.html -f html
-        //             """
-
-        //             echo "OWASP ZAP Scan Complete. Report saved at ./owasp_zap_report.html"
-        //         }
-        //     }
-        // }
-    }
-
-    post {
-        always {
-            script {
-                echo "============= Turning OFF Containers ==============="
-                bat 'docker-compose down'
-                echo "=====LOG==== Docker-compose-exit-code2: %ERRORLEVEL%"
-
-                echo "============= Cleaning up the Workspace ==============="
-                bat 'del /q /s * && for /d %%p in (*) do rmdir "%%p" /s /q'
-
-                echo "============= Removing the .git Folder ==============="
-                bat 'rmdir /s /q .git'
-            }
-        }
-    }
-}
