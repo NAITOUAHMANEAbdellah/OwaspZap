@@ -121,7 +121,7 @@ pipeline {
             steps {
                 script {
                     echo '===========Cloning the repository================='
-                    git url: 'https://github.com/sam99235/akaunting_docker_app.git', branch: 'main'
+                    git url: 'https://github.com/NAITOUAHMANEAbdellah/OwaspZap.git', branch: 'main'
                 }
             }
         }
